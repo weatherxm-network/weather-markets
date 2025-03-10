@@ -25,8 +25,7 @@ This is a PoC for the first weather resolver service leveraging data from the [*
 ## Functional Requirements
 
 ### 1. **Data Acquisition**
-   - Use the dataset from the **WeatherXM Web3 Storage** called **Proofs** to calculate the median highest temperature for an area (e.g., London).
-
+   - Use the dataset from the **WeatherXM Web3 Storage** called **Proofs** to calculate the median highest temperature for an area (e.g., London) daily.
 
 ### 2. **Device Filtering**
    - **Active Device List Creation**: Calculate the active devices that should be considered based on:
@@ -35,7 +34,7 @@ This is a PoC for the first weather resolver service leveraging data from the [*
    - The filtered list ensures only the most accurate and trustworthy weather data is used.
 
 ### 3. **Computation and Publication**
-   - Develop the algorithm that computes the **median highesttemperature** for the London area.
+   - Develop the algorithm that computes the **median highest temperature** for the London area.
    - Fetch, filter, and compute data based on a set of predefined criteria.
    - Calculate the final median highesttemperature.
 
