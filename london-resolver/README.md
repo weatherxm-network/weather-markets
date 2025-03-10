@@ -1,4 +1,4 @@
-# PoC Weather Resolver Service for London Monthly Average Temperature
+# Weather Resolver for London Daily Highest Temperature
 
 ##### Table of Contents  
 - [Overview](#overview)
@@ -17,14 +17,14 @@
 
 ## Overview
 
-This is a PoC for the first weather resolver service leveraging data from the [**WeatherXM Data Index**](https://index.weatherxm.com/). The experiment involves calculating the average temperature for a major city (in this case, London) over a 30-day period. This result can potentially be used to resolve a weather bet, where users can predict whether the actual average temperature falls within a certain range or not. This experiment serves as a prototype.
+This is a PoC for the first weather resolver service leveraging data from the [**WeatherXM Data Index**](https://index.weatherxm.com/). The experiment involves calculating the median highesttemperature for a major city (in this case, London) over a 30-day period. This result can potentially be used to resolve a weather bet, where users can predict whether the actual median highesttemperature falls within a certain range or not. This experiment serves as a prototype.
 
 ---
 
 ## Functional Requirements
 
 ### 1. **Data Acquisition**
-   - Use the dataset from the **WeatherXM Web3 Storage** called **Proofs** to calculate the average temperature for an area (e.g., London) over a 30-day period.
+   - Use the dataset from the **WeatherXM Web3 Storage** called **Proofs** to calculate the median highesttemperature for an area (e.g., London) over a 30-day period.
 
 ### 2. **Device Filtering**
    - **Active Device List Creation**: Calculate the active devices that should be considered based on:
@@ -33,9 +33,9 @@ This is a PoC for the first weather resolver service leveraging data from the [*
    - The filtered list ensures only the most accurate and trustworthy weather data is used.
 
 ### 3. **Computation and Publication**
-   - Develop the algorithm that computes the **average temperature** for the London area over the last 30 days.
+   - Develop the algorithm that computes the **median highesttemperature** for the London area.
    - Fetch, filter, and compute data based on a set of predefined criteria.
-   - Calculate the final average temperature.
+   - Calculate the final median highesttemperature.
 
 ---
 
@@ -54,7 +54,7 @@ This project can be divided into the following steps:
    - Publish the proofs dataset, including the calculated Quality-of-Data, Proof-of-Location and Reward scores to **Tableland**. This publication will form the basis of the experiment and future verifications.
 
 3. **Filtering**
-   - Write a script to calculate the average temperature for the last 30 days using the proofs dataset. This calculation should exclusively include data from devices that meet the required criteria:
+   - Write a script to calculate the median highesttemperature using the proofs dataset. This calculation should exclusively include data from devices that meet the required criteria:
      - **Geolocation** (London region).
      - **QoD > 0.8** and **PoL > 0**.
      - **Verification of data authenticity** using the public keys, signatures and base64 encoded data packets from the weather devices.
@@ -157,7 +157,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 4. Create a **.env** file with all ENVIRONMENTAL VARIABLES defined in **.env.template**
-4. There are 2 ways to run the program using one **.parquet** file to calculate a daily average temperature for London:
+4. There are 2 ways to run the program using one **.parquet** file to calculate a daily median highesttemperature for London:
    - First download the **paruet** file of your choosing from [**WeatherXM Data Index**](https://index.weatherxm.com/).
    - Then, you may run the **main** in 2 ways:
       [--] With chunks enabled using low memory:
@@ -171,7 +171,7 @@ pip install -r requirements.txt
 
 ## Example
 
-After executing the runner, the necessary files will be retrieved from **Basin**, proper geo location and weather filtering will take place and then the data verifiaction will be evaluated before calculting the average temperature. 
+After executing the runner, the necessary files will be retrieved from **Basin**, proper geo location and weather filtering will take place and then the data verifiaction will be evaluated before calculting the median highesttemperature. 
 
 The following is the output when evaluating a **.parquet** file without chunks:
 
@@ -191,7 +191,7 @@ LONDON DEVICES FROM DATAFRAME PARTICIPATING IN RESOLUTION AFTER FILTERING: 26%
 AVG TEMP: 9.49 Celsius
 ```
 
-The daily average temperature is the output in the end `AVG TEMP: 9.49 Celsius`
+The daily median highesttemperature is the output in the end `AVG TEMP: 9.49 Celsius`
 
 The following is the output when executing the **runner.py** for a period of time:
 
@@ -224,14 +224,14 @@ PROCESSED 32 CHUNKS FOR FILE downloads/bafybeihogsuzu5of6lzrafdfzb6ie2jtd2hozvqo
 AVG TEMP: 8.3 Celsius
 
 ```
-After running the filtering in chunks for all **.parquet** files, the average temperature is calculated for the chosen time using the env variables *AFTER and BEFORE*. The output in the end `AVG TEMP: 9.3 Celsius` indicates the average temperature for this time period.
+After running the filtering in chunks for all **.parquet** files, the median highesttemperature is calculated for the chosen time using the env variables *AFTER and BEFORE*. The output in the end `AVG TEMP: 9.3 Celsius` indicates the median highesttemperature for this time period.
 
 ---
 
 ## Next Steps
 
 To build on the success of this experiment, future efforts may include the following:
-- **30 Days Resolver**: Run the above script for over 30 days, and then find the average temperature for the last 30 days.
+- **30 Days Resolver**: Run the above script, and then find the median highesttemperature.
 - **Decentralized Data Pipelines**: Implement a system that continuously ingests and processes weather data using decentralized, distributed pipelines. This approach will ensure data integrity and eliminate central points of failure.
 
 - **Trustless Computation**: Leverage a decentralized computation framework to perform temperature calculations across multiple nodes. This guarantees that the results are produced transparently and can be verified by any party.
