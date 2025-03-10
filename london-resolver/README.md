@@ -1,5 +1,6 @@
 # Weather Resolver for London Daily Highest Temperature
 
+
 ##### Table of Contents  
 - [Overview](#overview)
 - [Functional Requirements](#functional-requirements)  
