@@ -4,6 +4,8 @@ import os
 import sys
 from datetime import datetime, timezone, timedelta
 from tqdm import tqdm
+import json
+PINATA_JWT = os.getenv('PINATA_JWT')
 
 def get_unix_timestamp(date_str, date_format="%Y-%m-%d"):
     dt = datetime.strptime(date_str, date_format)
@@ -16,20 +18,18 @@ def fetch_events(namespace, limit, basin_base_url, after, before):
     try:
         url = f"{basin_base_url}/{namespace}/events"
         params = {
-            "limit": limit
+            "limit": limit,
+            "after": after,
+            "before": before
         }
-        print(f"Requesting URL: {url}")
-        print(f"Params: {params}")
-
         response = requests.get(url, params=params)
         print(f"Response Status: {response.status_code}")
-        print(f"Response Body: {response.text}")
         events = response.json()
         response.raise_for_status()
         cids = [event['cid'] for event in events if 'cid' in event]
         return cids
     except Exception as e:
-        print(f"ERROR FETCHING CIDS: {str(e)}")
+        print(f"ERROR FETCHING CID: {str(e)}")
 
 def download_from_ipfs(cid, save_dir=".", gateway="http://localhost:8080/ipfs/"):
     """
@@ -62,7 +62,7 @@ def download_from_ipfs(cid, save_dir=".", gateway="http://localhost:8080/ipfs/")
         print(f"ERROR DOWNLOADING FROM IPFS GATEWAY: {str(e)}")
         
 
-def download_from_basin(cid, save_dir="downloads"):
+def download_from_basin(cid, save_dir="."):
     """
     Download a file from Basin using its CID and save it locally.
     Args:
@@ -75,8 +75,7 @@ def download_from_basin(cid, save_dir="downloads"):
     """
     base_url = f"https://basin.tableland.xyz/events/{cid}"
     os.makedirs(save_dir, exist_ok=True)
-    file_path = os.path.join(save_dir, f"{cid}.parquet") 
-
+    file_path = os.path.join(save_dir, f"{cid}.parquet")
     try:
         print(f"DOWNLOADING CID {cid}")
         response = requests.get(base_url, stream=True)
@@ -86,23 +85,56 @@ def download_from_basin(cid, save_dir="downloads"):
                 file.write(chunk)
         print(f"FILE DOWNLOADED AND SAVED TO {file_path}")
         return file_path
-
     except requests.exceptions.RequestException as e:
-        print(f"Failed to download CID {cid}: {e}")
-        raise Exception(f"Error downloading file from Basin: {e}")
+        print(f"FAILED TO DOWNLOAD CID {cid}: {e}")
+        raise Exception(f"ERROR DOWNLOADING FILE FROM BASIN: {e}")
     
+def upload_json_and_pin(devices):
+    if not PINATA_JWT:
+        print("PINATE_JWT is not set. Skipping Pinata storage.")
+        return
+    try:
+        json_str = json.dumps(devices)
+        files = {
+            'file': ('data.json', json_str, 'application/json')
+        }
+        upload_url = "https://uploads.pinata.cloud/v3/files"
+        headers = {
+            "Authorization": f"Bearer {PINATA_JWT}"
+        }
+        upload_response = requests.post(upload_url, headers=headers, files=files)
+        upload_response_json = upload_response.json()
+        if upload_response.status_code != 200:
+            print("FILE UPLOAD FAILED:", upload_response_json)
+            return
+
+        print("UPLOAD RESPONSE:", upload_response_json)
+        file_id = upload_response_json.get("id")
+        if not file_id:
+            print("FAILED TO RETIEVE FILE ID.")
+            return
+        pin_url = "https://api.pinata.cloud/v3/pins"
+        pin_data = {
+            "fileId": file_id,
+            "name": "device_data.json"
+        }
+        pin_response = requests.post(pin_url, headers=headers, json=pin_data)
+        pin_response_json = pin_response.json()
+        print("Pin response:", pin_response_json)
+    except Exception as e:
+        print("Error:", e)
+
 if __name__ == "__main__":
     namespace = os.getenv('BASIN_NAMESPACE')
     limit = 10
 
     date = os.getenv('DATE')
     date_object = datetime.strptime(date, '%Y-%m-%d')
-    before_date = date_object + timedelta(days=1)
+    before_date = date_object + timedelta(days=2)
     basin_base_url = os.getenv('BASIN_API_BASE_URL')
 
     after = get_unix_timestamp(date)
     before = get_unix_timestamp(before_date.strftime("%Y-%m-%d"))
-    print(after, before)
     gateway = os.getenv("IPFS_GATEWAY", "https://ipfs.io/ipfs")
     print(f"FETCHING CID FOR {date} ({date})")
     try:
@@ -112,14 +144,27 @@ if __name__ == "__main__":
             print(f"\n PROCESSING CID {cids[0]}")
             path = download_from_basin(cids[0])
             print(f"\n FETCHED DATA FROM IPFS")
-            decision = decide(path, True)
+            decision,filtered_devices = decide(path, True)
+            print(decision,filtered_devices)
             # REMOVE FILE AFTER PROCESSING IT AND DOWNLOAD THE NEXT ONE
             os.remove(path)
-            if type(decision) != str:
-                celsius_temp = float(round(float(decision),2))
-            sys.stdout = sys.__stdout__
-            fahrenheit_temp = celsius_to_fahrenheit(celsius_temp)
-            print(f"MEDIAN HIGHEST TEMP FOR {date}: {round(float(decision),2)} °C is equal to {fahrenheit_temp}°F")
+            if type(decision) != str:  
+                celsius_temp = round(float(decision), 2)
+                fahrenheit_temp = celsius_to_fahrenheit(celsius_temp)
+                devices_list = json.loads(filtered_devices)
+                results = {
+                    "devices": devices_list,
+                    "temperature_celsius": celsius_temp,
+                    "temperature_fahrenheit": fahrenheit_temp
+                }
+                output_filename = f"temperature_results_{date}.json"
+                with open(output_filename, "w") as f:
+                    json.dump(results, f, indent=4)
+                print(f"SAVED RESULTS LOCALY AS {output_filename}")
+                upload_json_and_pin(results)
+                print(f"MEDIAN HIGHEST TEMP FOR {date}: {round(float(decision),2)} °C is equal to {fahrenheit_temp}°F")
+            else:
+                print('NO DEVICES MEET THE CRITERIA TO CALCULATE MEDIAN HIGHEST TEMPERATURE')
         else:
             print(f"NO CIDs RETRIEVED FROM IPFS FOR {date}")
     except Exception as e:

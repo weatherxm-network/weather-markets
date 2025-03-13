@@ -5,7 +5,6 @@ import weather.algo as weather
 import data.algo as data
 import numpy as np
 
-
 def from_file(path):
     return pq.read_pandas(path, columns=['name', 'model', 'cell_id', 'public_key_PEM', 'ws_packet_b64', 'ws_packet_sig', 'lat', 'lon', 'qod_score', 'pol_score', 'temperature']).to_pandas()
 
@@ -72,11 +71,14 @@ def filter(chunk):
 
 def decide(path, low_mem):
     df,chunk_num = load_df(path, low_mem)
+    unique_devices = df[['name', 'cell_id']].drop_duplicates(subset=['name'])
+    filtered_devices = unique_devices.to_json(orient='records')
     print("PROCESSED {} CHUNKS FOR FILE {}".format(chunk_num,path))
     if df.size>0:
         device_max = df.groupby('name', as_index=False, observed=False)['temperature'].max()
         median_temp = device_max['temperature'].median()
-        return round(median_temp, 2)
-    return 'NO DEVICES MEET THE CRITERIA TO CALCULATE AVG TEMPERATURE'
+        return round(median_temp, 2),filtered_devices
+    print('NO DEVICES MEET THE CRITERIA TO CALCULATE MEDIAN HIGHEST TEMPERATURE')
+    return 
 
 
