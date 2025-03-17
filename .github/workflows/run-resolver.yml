@@ -1,9 +1,6 @@
 name: Run Docker Compose and Create Release
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
