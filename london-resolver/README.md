@@ -85,7 +85,7 @@ The weather stations' geolocation is mapped into their corresponding H3 hexagons
 
 For this experiment, weather devices will be filtered based on their geolocation in the **London area**. The geolocation filtering is performed using **H3 hexagons at resolution 7**, which divide the Earth into hexagonal cells that allow for efficient spatial indexing. 
 
-<img src="https://github.com/WeatherXM/weather-bets/blob/main/london-experiment/geojson/london_h3_plot.png?raw=true" alt="H3 London Map" width="500" height="500">
+<img src="/london-resolver/geojson/london_h3_plot.png?raw=true" alt="H3 London Map" width="500" height="500">
 
 ### Data Source for London Boundaries
 In addition to H3-based filtering, administrative boundaries from the [**UK Open Geography Portal**](https://geoportal.statistics.gov.uk/) are used for validation. This resource provides downloadable datasets, including **GeoJSON files** for the [**London area**](https://geoportal.statistics.gov.uk/datasets/d1dd6053dc7f4b14987e093b30a64435_0/explore?location=51.533145%2C0.201410%2C10.45). These files are based on official data from the Ordnance Survey and Office for National Statistics, and they offer detailed administrative boundaries such as boroughs and wards.
@@ -121,8 +121,8 @@ On the receiving side, the authenticity of a packet is verified using the raw da
 #### Tamperproof Data: 
 Because the signature is uniquely tied to both the raw data and the private key, any attempt to alter the packet's content would render the signature invalid. This guarantees that the data received by the other side has not been tampered with and originates from the intended device.
 
-#### Data Inclusion for Weather Bets: 
-For applications such as weather bets, only verified data—packets that successfully pass the signature validation process—are considered. This ensures fairness and accuracy by excluding potentially corrupted or unauthenticated information.
+#### Data Inclusion for Weather Markets: 
+For applications such as weather markets, only verified data—packets that successfully pass the signature validation process—are considered. This ensures fairness and accuracy by excluding potentially corrupted or unauthenticated information.
 
 The use of secure elements and cryptographic signing ensures that the data transmitted by weather stations is both reliable and tamperproof, reinforcing trust in systems that rely on this information.
 
@@ -206,7 +206,7 @@ WEATHER VERIFIED DEVICES COUNT WITH QOD>=0.8 AND POL>0: 1
 WEATHER DATA FILTERING IS COMPLETED
 DATA VERIFICATION IS COMPLETED
 DATA VERIFIED DEVICES COUNT: 1
-LONDON DEVICES FROM DATAFRAME PARTICIPATING IN BET RESOLUTION AFTER FILTERING: 100%
+LONDON DEVICES FROM DATAFRAME PARTICIPATING IN MARKET RESOLUTION AFTER FILTERING: 100%
 Processed chunk 29: 5035 rows
 GEO VERIFIED DEVICES COUNT: 1
 GEO LOCATION VERIFICATION IS COMPLETED
@@ -214,7 +214,7 @@ WEATHER VERIFIED DEVICES COUNT WITH QOD>=0.8 AND POL>0: 0
 WEATHER DATA FILTERING IS COMPLETED
 DATA VERIFICATION IS COMPLETED
 DATA VERIFIED DEVICES COUNT: 0
-LONDON DEVICES FROM DATAFRAME PARTICIPATING IN BET RESOLUTION AFTER FILTERING: 0%
+LONDON DEVICES FROM DATAFRAME PARTICIPATING IN MARKET RESOLUTION AFTER FILTERING: 0%
 CHUNK 30 WAS FILTERED OUT (NO ROWS MEET THE FILTERING CRITERIA)
 GEO VERIFIED DEVICES COUNT: 2
 GEO LOCATION VERIFICATION IS COMPLETED
@@ -222,7 +222,7 @@ WEATHER VERIFIED DEVICES COUNT WITH QOD>=0.8 AND POL>0: 1
 WEATHER DATA FILTERING IS COMPLETED
 DATA VERIFICATION IS COMPLETED
 DATA VERIFIED DEVICES COUNT: 1
-LONDON DEVICES FROM DATAFRAME PARTICIPATING IN BET RESOLUTION AFTER FILTERING: 50%
+LONDON DEVICES FROM DATAFRAME PARTICIPATING IN MARKET RESOLUTION AFTER FILTERING: 50%
 Processed chunk 31: 5033 rows
 FINAL DATAFRAME SHAPE: (113961, 11)
 PROCESSED 32 CHUNKS FOR FILE downloads/bafybeihogsuzu5of6lzrafdfzb6ie2jtd2hozvqofvregevknidk2gr7hi.parquet
@@ -245,11 +245,11 @@ To build on the success of this experiment, future efforts may include the follo
 
 - **Verifiable Compute Network**: Introduce a verifiable compute layer where multiple nodes process and validate the results independently. This will add an additional layer of trust and decentralization, ensuring that the computed results are reliable and unbiased.
 
-- **Scalability**: Enable the experiment to scale beyond a single city by incorporating distributed data processing and computation, paving the way for real-time bets and support for a larger number of participants and datasets.
+- **Scalability**: Enable the experiment to scale beyond a single city by incorporating distributed data processing and computation, paving the way for real-time weather markets and support for a larger number of participants and datasets.
 
 ---
 
-By incorporating these advancements, the experiment can evolve to be more secure, transparent, and scalable, enabling future predictions and bet scenarios across a global network.
+By incorporating these advancements, the experiment can evolve to be more secure, transparent, and scalable, enabling future predictions and market scenarios across a global network.
 
 
 ---

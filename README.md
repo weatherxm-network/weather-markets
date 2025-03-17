@@ -1,11 +1,13 @@
-# Weather Bets
-This repository contains scripts and computations designed to resolve bets on the several platforms. It includes data processing and analysis tools to bets on various markets such as TrueMarkets.
-For the purpose of resolving bets, the resolvers retrieve the sensor data from IPFS, perform the data filtering and the cryptographic proof validation and calculate the result based on the needs of each bet.
+# Weather Markets
+This repository contains scripts and computations designed to resolve weather markets on the several platforms. It 
+includes data processing and analysis tools for markets on various platforms, such as TrueMarkets.
+For the purpose of resolving markets, the resolvers retrieve WeatherXM station data from IPFS, perform the 
+data filtering, apply cryptographic proof validation and calculate the result based on the needs of each market.
 
 ## Features
 - H3 grid calculations for geospatial data
 - Processing and filtering of large datasets that originate to IPFS
-- Functions to compute and validate metrics for bets
+- Functions to compute and validate metrics for markets
 
 ## Installation
 1. Clone the repository.

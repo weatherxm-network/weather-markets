@@ -1,0 +1,52 @@
+name: Run Docker Compose and Create Release
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date for the release'
+        required: false  # Make this optional
+        default: ''
+
+jobs:
+  run-docker-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Calculate default DATE (2 days ago)
+        if: ${{ github.event.inputs.date == '' || github.event.inputs.date == null }}
+        run: |
+          echo "DATE=$(date -d '2 days ago' +'%Y-%m-%d')" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set DATE from input or fallback
+        if: ${{ github.event.inputs.date != '' && github.event.inputs.date != null }}
+        run: echo "DATE=${{ github.event.inputs.date }}" >> $GITHUB_ENV
+
+      - name: Ensure .env file exists
+        run: |
+          if [ ! -f ./london-resolver/.env ]; then
+            echo "DATE=${{ env.DATE }}" > ./london-resolver/.env
+          fi
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Run Docker Compose
+        run: docker-compose -f ./london-resolver/docker-compose.yml up --build
+
+      - name: Copy output file from container
+        run: docker cp london-runner:/app/temperature_results_${{ env.DATE }}.json .
+
+      - name: Archive resolution output file
+        uses: actions/upload-artifact@v4
+        with:
+          name: temperature_results_${{ env.DATE }}
+          path: ./temperature_results_${{ env.DATE }}.json

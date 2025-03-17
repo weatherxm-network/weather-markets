@@ -66,7 +66,7 @@ def filter(chunk):
     print('DATA VERIFICATION IS COMPLETED')
     print('DATA VERIFIED DEVICES COUNT: {}'.format(len(data_verified['name'].unique())))
     if geo_filtered.size>0:
-        print('LONDON DEVICES FROM DATAFRAME PARTICIPATING IN BET RESOLUTION AFTER FILTERING: {}%'.format(round((len(data_verified['name'].unique()) * 100)/len(geo_filtered['name'].unique())),8))
+        print('LONDON DEVICES FROM DATAFRAME PARTICIPATING IN MARKET RESOLUTION AFTER FILTERING: {}%'.format(round((len(data_verified['name'].unique()) * 100)/len(geo_filtered['name'].unique())),8))
     return data_verified
 
 def decide(path, low_mem):
