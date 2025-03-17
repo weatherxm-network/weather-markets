@@ -45,25 +45,8 @@ jobs:
       - name: Copy output file from container
         run: docker cp london-runner:/app/temperature_results_${{ env.DATE }}.json .
 
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Archive resolution output file
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ env.DATE }}
-          release_name: "Release for ${{ env.DATE }}"
-          body: |
-            \```\json
-            $(cat temperature_results_${{ env.DATE }}.json)
-            \```\
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./temperature_results_${{ env.DATE }}.json
-          asset_name: temperature_results_${{ env.DATE }}.json
-          asset_content_type: application/json
+          name: temperature_results_${{ env.DATE }}
+          path: ./temperature_results_${{ env.DATE }}.json
