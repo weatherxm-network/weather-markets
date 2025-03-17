@@ -1,0 +1,46 @@
+name: Run Docker Compose and Create Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  run-docker-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set DATE environment variable
+        run: echo "DATE=$(date -d 'yesterday' +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Run Docker Compose
+        run: docker-compose -f ./london-resolver/docker-compose.yml up --build
+
+      - name: Copy output file from container
+        run: docker cp london-runner:/app/temperature_results_${{ env.DATE }}.json .
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.DATE }}
+          release_name: "Release for ${{ env.DATE }}"
+          body: |
+            \```\json
+            $(cat temperature_results_${{ env.DATE }}.json)
+            \```\
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./temperature_results_${{ env.DATE }}.json
+          asset_name: temperature_results_${{ env.DATE }}.json
+          asset_content_type: application/json
