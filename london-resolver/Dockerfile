@@ -14,6 +14,7 @@ WORKDIR /app
 ENV PYTHONPATH=/app
 COPY data data
 COPY decision decision
+COPY abi abi
 COPY weather weather
 COPY geojson geojson
 COPY location location
