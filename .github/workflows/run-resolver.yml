@@ -9,7 +9,7 @@ on:
       date:
         description: 'Date for the release'
         required: false  # Make this optional
-        default: ${{ secrets.FALLBACK_DATE || '' }}
+        default: ''
 
 jobs:
   run-docker-compose:
