@@ -4,6 +4,10 @@ includes data processing and analysis tools for markets on various platforms, su
 For the purpose of resolving markets, the resolvers retrieve WeatherXM station data from IPFS, perform the 
 data filtering, apply cryptographic proof validation and calculate the result based on the needs of each market.
 
+## Examples
+
+[London highest temperature daily market resolver](/london-resolver)
+
 ## Features
 - H3 grid calculations for geospatial data
 - Processing and filtering of large datasets that originate to IPFS
