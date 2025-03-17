@@ -1,12 +1,15 @@
 name: Run Docker Compose and Create Release
 
 on:
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       date:
         description: 'Date for the release'
         required: true
-        default: $(date -d 'yesterday' +'%Y-%m-%d')
+        default: $(date -d '2 days ago' +'%Y-%m-%d')
 
 jobs:
   run-docker-compose:
