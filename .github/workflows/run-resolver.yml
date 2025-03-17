@@ -8,8 +8,8 @@ on:
     inputs:
       date:
         description: 'Date for the release'
-        required: true
-        default: $(date -d '2 days ago' +'%Y-%m-%d')
+        required: false  # Make this optional
+        default: ${{ secrets.FALLBACK_DATE || '' }}
 
 jobs:
   run-docker-compose:
@@ -18,7 +18,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set DATE environment variable
+      - name: Calculate default DATE (2 days ago)
+        if: ${{ github.event.inputs.date == '' || github.event.inputs.date == null }}
+        run: |
+          echo "DATE=$(date -d '2 days ago' +'%Y-%m-%d')" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set DATE from input or fallback
+        if: ${{ github.event.inputs.date != '' && github.event.inputs.date != null }}
         run: echo "DATE=${{ github.event.inputs.date }}" >> $GITHUB_ENV
 
       - name: Ensure .env file exists
