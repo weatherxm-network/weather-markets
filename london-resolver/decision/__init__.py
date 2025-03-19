@@ -71,8 +71,11 @@ def filter(chunk):
 
 def decide(path, low_mem):
     df,chunk_num = load_df(path, low_mem)
-    unique_devices = df[['name', 'cell_id']].drop_duplicates(subset=['name'])
-    filtered_devices = unique_devices.to_json(orient='records')
+    # Get the unique device details
+    unique_devices = df[['name', 'cell_id', 'lat', 'lon', 'qod_score', 'pol_score']].drop_duplicates(subset=['name'])
+    device_max_temp = df.groupby('name', as_index=False)['temperature'].max()
+    df_highest_temp = unique_devices.merge(device_max_temp, on='name', how='left')
+    filtered_devices = df_highest_temp.to_json(orient='records')
     print("PROCESSED {} CHUNKS FOR FILE {}".format(chunk_num,path))
     if df.size>0:
         device_max = df.groupby('name', as_index=False, observed=False)['temperature'].max()

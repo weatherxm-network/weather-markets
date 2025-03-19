@@ -251,6 +251,7 @@ if __name__ == "__main__":
                 fahrenheit_temp = celsius_to_fahrenheit(celsius_temp)
                 devices_list = json.loads(filtered_devices)
                 results = {
+                    "date": date,
                     "devices": devices_list,
                     "temperature_celsius": celsius_temp,
                     "temperature_fahrenheit": fahrenheit_temp
