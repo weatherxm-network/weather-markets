@@ -11,6 +11,9 @@ PINATA_JWT = os.getenv('PINATA_JWT')
 RPC_URL = os.getenv("RPC_URL")
 PRIVATE_KEY = os.getenv("PRIVATE_KEY")
 CONTRACT_ADDRESS = os.getenv('CONTRACT_ADDRESS')
+IPNS_KEY = os.getenv("IPNS_KEY")
+PLATFORM = os.getenv("BETTING_PLATFORM")
+BET_NAME = os.getenv("BET_NAME")
 
 def get_unix_timestamp(date_str, date_format="%Y-%m-%d"):
     dt = datetime.strptime(date_str, date_format)
@@ -193,7 +196,7 @@ def upload_json_and_pin(devices, date):
 
         # Pin the new CID
         pin_url = "https://api.pinata.cloud/pinning/pinByHash"
-        pin_data = {"hashToPin": new_cid, "name": "device_data.json", "network": "public"}
+        pin_data = {"hashToPin": new_cid, "name": "device_data.json"}
         pin_response = requests.post(pin_url, headers=headers, json=pin_data)
 
         try:
@@ -216,7 +219,7 @@ def upload_json_and_pin(devices, date):
         date_integer = int(date_object.strftime("%Y%m%d"))
         if PRIVATE_KEY:
             print(f"🟢 STORING CID {new_cid} ON-CHAIN FOR {date}")
-            store_cid_on_chain(date_integer, "Truemarkets", "LondonHighestTemperature", new_cid)
+            store_cid_on_chain(date_integer, PLATFORM, BET_NAME, new_cid)
         else:
             print("⚠️ PRIVATE_KEY not found. Skipping smart contract interaction.")
     except Exception as e:
