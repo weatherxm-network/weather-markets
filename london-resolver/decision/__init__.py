@@ -16,10 +16,11 @@ def load_df(path, low_mem):
         processed_chunks = []
         for i in range(parquet_file.metadata.num_row_groups):
             chunk = parquet_file.read_row_group(i).to_pandas(use_threads=True)
-            chunk = chunk[['name', 'model', 'cell_id', 'public_key_PEM', 'ws_packet_b64', 
+            chunk = chunk[['name', 'device_id', 'model', 'cell_id', 'public_key_PEM', 'ws_packet_b64', 
                         'ws_packet_sig', 'lat', 'lon', 'qod_score', 'pol_score', 'temperature']]
             chunk = chunk.astype({
                 'name': 'category',
+                'device_id': 'string',
                 'model': 'string',
                 'cell_id': 'string',
                 'public_key_PEM': 'string',
@@ -42,7 +43,7 @@ def load_df(path, low_mem):
             df = pd.concat(processed_chunks, ignore_index=True)
             print("FINAL DATAFRAME SHAPE:", df.shape)
         else:
-            df = pd.DataFrame(columns=['name', 'model', 'cell_id', 'public_key_PEM', 
+            df = pd.DataFrame(columns=['name', 'device_id', 'model', 'cell_id', 'public_key_PEM', 
                                     'ws_packet_b64', 'ws_packet_sig', 'lat', 'lon', 
                                     'qod_score', 'pol_score', 'temperature'])
             print("NO ROWS MET THE FILTERING CRITERIA")
@@ -72,7 +73,7 @@ def filter(chunk):
 def decide(path, low_mem):
     df,chunk_num = load_df(path, low_mem)
     # Get the unique device details
-    unique_devices = df[['name', 'cell_id', 'lat', 'lon', 'qod_score', 'pol_score']].drop_duplicates(subset=['name'])
+    unique_devices = df[['name', 'device_id', 'cell_id', 'lat', 'lon', 'qod_score', 'pol_score']].drop_duplicates(subset=['name'])
     device_max_temp = df.groupby('name', as_index=False)['temperature'].max()
     df_highest_temp = unique_devices.merge(device_max_temp, on='name', how='left')
     filtered_devices = df_highest_temp.to_json(orient='records')

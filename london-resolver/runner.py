@@ -11,9 +11,9 @@ PINATA_JWT = os.getenv('PINATA_JWT')
 RPC_URL = os.getenv("RPC_URL")
 PRIVATE_KEY = os.getenv("PRIVATE_KEY")
 CONTRACT_ADDRESS = os.getenv('CONTRACT_ADDRESS')
-IPNS_KEY = os.getenv("IPNS_KEY")
-PLATFORM = os.getenv("BETTING_PLATFORM")
+BETTING_PLATFORM = os.getenv("BETTING_PLATFORM")
 BET_NAME = os.getenv("BET_NAME")
+GROUP_ID = os.getenv("GROUP_ID")
 
 def get_unix_timestamp(date_str, date_format="%Y-%m-%d"):
     dt = datetime.strptime(date_str, date_format)
@@ -126,31 +126,36 @@ def download_from_basin(cid, save_dir="."):
     
 def upload_json_and_pin(devices, date):
     if not PINATA_JWT:
-        print("PINATE_JWT is not set. Skipping Pinata storage.")
+        print("PINATA_JWT is not set. Skipping Pinata storage.")
         return
     try:
         json_str = json.dumps(devices)  
         files = {
             'file': ('data.json', json_str, 'application/json')
         }
+        CUSTOM_GROUP_ID = f"{BETTING_PLATFORM.lower()}-{BET_NAME.lower().replace(' ', '-')}"
         data = {
-            "network": "public"
+            "network": "public",
+            "name": f"{BET_NAME}_{date}.json",
+            "keyvalues": json.dumps({
+                    "medianCelciusTemp": devices["median_temperature_celsius"],
+                    "medianFarenheitTemp": devices["median_temperature_fahrenheit"],
+                    "betName": BET_NAME,
+                    "platform": BETTING_PLATFORM,
+                    "date": date,
+                    "customGroup": CUSTOM_GROUP_ID
+            })
         }
-
         upload_url = "https://uploads.pinata.cloud/v3/files"
         headers = {
             "Authorization": f"Bearer {PINATA_JWT}"
         }
-
-        # Upload file to Pinata
         upload_response = requests.post(upload_url, headers=headers, files=files, data=data)
-
-        # Check if response is valid JSON
         try:
             upload_response_json = upload_response.json()
         except json.JSONDecodeError:
             print("❌ ERROR: Failed to decode JSON response from Pinata. Raw response:")
-            print(upload_response.text)  
+            print(upload_response.text)  # Print the raw response to debug
             return
 
         if upload_response.status_code != 200:
@@ -158,68 +163,36 @@ def upload_json_and_pin(devices, date):
             return
 
         print("✅ UPLOAD RESPONSE:", json.dumps(upload_response_json, indent=4))
-        
-        file_data = upload_response_json.get("data", {})
-        new_cid = file_data.get("cid", None)
 
-        if new_cid is None:
-            print("❌ ERROR: CID not found in response. Full response:", json.dumps(upload_response_json, indent=4))
+        file_data = upload_response_json.get("data")
+        if not file_data:
+            print("❌ ERROR: No 'data' field in response.")
             return
 
-        print(f"✅ Successfully uploaded CID: {new_cid}")
+        file_id = file_data.get("id")
 
-        # Check if CID is already pinned
-        pin_list_url = "https://api.pinata.cloud/data/pinList"
-        params = {"hashContains": new_cid}
-        pin_list_response = requests.get(pin_list_url, headers=headers, params=params)
-
+        if not file_id:
+            print("❌ FAILED TO RETRIEVE FILE ID.")
+            return
+        group_url = f"https://api.pinata.cloud/v3/groups/public/{GROUP_ID}/ids/{file_id}"
+        group_response = requests.put(group_url, headers=headers)
         try:
-            pin_list_json = pin_list_response.json()
+            group_response = group_response.json()
         except json.JSONDecodeError:
-            print("❌ ERROR: Failed to decode JSON response when checking pin list.")
-            print(pin_list_response.text)  
+            print("❌ ERROR: Failed to decode JSON response from Pinata for adding file id to group. Raw response:")
+            print(group_response.text)  # Print the raw response to debug
             return
-
-        previous_pins = pin_list_json.get("rows", [])
-        if previous_pins:
-            previous_cid = previous_pins[0].get("ipfs_pin_hash")
-            print(f"🔄 Previous CID found: {previous_cid}, Unpinning it...")
-
-            # Unpin previous CID
-            unpin_url = f"https://api.pinata.cloud/pinning/unpin/{previous_cid}"
-            unpin_response = requests.delete(unpin_url, headers=headers)
-
-            if unpin_response.status_code == 200:
-                print(f"✅ Successfully unpinned previous CID: {previous_cid}")
-            else:
-                print(f"❌ Failed to unpin previous CID: {previous_cid}. Response: {unpin_response.text}")
-
-        # Pin the new CID
-        pin_url = "https://api.pinata.cloud/pinning/pinByHash"
-        pin_data = {"hashToPin": new_cid, "name": "device_data.json"}
-        pin_response = requests.post(pin_url, headers=headers, json=pin_data)
-
-        try:
-            pin_response_json = pin_response.json()
-        except json.JSONDecodeError:
-            print("❌ ERROR: Failed to decode JSON response when pinning new CID.")
-            print(pin_response.text)
-            return
-
-        if pin_response.status_code == 200:
-            print(f"✅ Successfully pinned new CID: {new_cid}")
+        cid = file_data.get("cid")
+        if cid:
+            print(f"✅ Successfully uploaded & pinned. CID: {cid}")
         else:
-            print(f"❌ ERROR: Failed to pin new CID: {new_cid}. Response: {pin_response_json}")
-        print(f"✅ Uploaded CID: {new_cid}")
-        date_object = datetime.strptime(date, "%Y-%m-%d")
-        date_integer = int(date_object.strftime("%Y%m%d"))
-
+            print("❌ ERROR: CID not found in response.")
         # Convert date to integer format YYYYMMDD
         date_object = datetime.strptime(date, "%Y-%m-%d")
         date_integer = int(date_object.strftime("%Y%m%d"))
         if PRIVATE_KEY:
-            print(f"🟢 STORING CID {new_cid} ON-CHAIN FOR {date}")
-            store_cid_on_chain(date_integer, PLATFORM, BET_NAME, new_cid)
+            print(f"🟢 STORING CID {cid} ON-CHAIN FOR {date}")
+            store_cid_on_chain(date_integer, BETTING_PLATFORM, BET_NAME, cid)
         else:
             print("⚠️ PRIVATE_KEY not found. Skipping smart contract interaction.")
     except Exception as e:
@@ -256,8 +229,8 @@ if __name__ == "__main__":
                 results = {
                     "date": date,
                     "devices": devices_list,
-                    "temperature_celsius": celsius_temp,
-                    "temperature_fahrenheit": fahrenheit_temp
+                    "median_temperature_celsius": celsius_temp,
+                    "median_temperature_fahrenheit": fahrenheit_temp
                 }
                 output_filename = f"temperature_results_{date}.json"
                 with open(output_filename, "w") as f:
@@ -271,3 +244,7 @@ if __name__ == "__main__":
             print(f"NO CIDs RETRIEVED FROM IPFS FOR {date}")
     except Exception as e:
         print(f"An error occurred: {e}")
+
+
+
+

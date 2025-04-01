@@ -23,4 +23,5 @@ COPY .env .env
 COPY runner.py runner.py
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
+RUN echo "RESOLVER IS INITIATED, BE PATIENT MY FRIEND..."
 CMD ["python3", "runner.py"]
