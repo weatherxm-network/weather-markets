@@ -1,0 +1,30 @@
+# Rules
+
+## About
+
+This repository is a python app that runs in a docker container and acts as the "resolver", that calculates  the ground truth  for the resolution of weather prediction markets, like Truemarkets, Polymarket and Kalshi. 
+It uses data from the WeatherXM weather station network, publicly available on IPFS.
+
+The first prediction market supported by this app is the Daily Highest Temperature market for London. 
+This means that the code in /london-resolver calculates the highest temperature for London, on a daily basis.
+
+In order to do this, the app:
+- Fetches the geographic bounds for london (also available in /london-resolver/geojson)
+- Calculates the availables H3 cells (or resolution 7) within these bounds
+- Fetches the WeatherXM data (weather data, station metadata, data cryptographic proofs) from Basin/IPFS for the specific date the resolver runs for
+- Filters data, keeping only the station data for the calculated H3 cells
+- Calculate the active devices that should be considered based on:
+    - **Quality-of-Data (QoD) >= 0.8**.
+    - **Proof-of-Location (PoL) > 0**.
+- Calculate the median highest temperature for the London area
+- Store the results on IPFS and pin the file using Pinata.
+- Index the CID on a smart contract for easy lookup
+
+## General
+
+- You are a PyTorch ML engineer and GitHub Actions expert
+- Use type hints consistently
+- Optimize for readability over premature optimization
+- Write modular code, using separate files for models, data loading, training, and evaluation
+- Follow PEP8 style guide for Python code
+
