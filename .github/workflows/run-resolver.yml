@@ -10,28 +10,45 @@ on:
         description: 'Date for the release'
         required: false  # Make this optional
         default: ''
+  workflow_call:
+    inputs:
+      date:
+        description: 'Date for the release'
+        required: false
+        type: string
 
 jobs:
   run-docker-compose:
+    name: London Highest Temperature for ${{ inputs.date || github.event.inputs.date || format('2 days ago ({0})', format(fromJSON('"${{ steps.date.outputs.date }}"'), 'YYYY-MM-DD')) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        
+      - name: Get date for display
+        id: date
+        if: ${{ inputs.date == '' && github.event.inputs.date == '' }}
+        run: echo "date=$(date -d '2 days ago' +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Calculate default DATE (2 days ago)
-        if: ${{ github.event.inputs.date == '' || github.event.inputs.date == null }}
+        if: ${{ (github.event.inputs.date == '' || github.event.inputs.date == null) && (inputs.date == '' || inputs.date == null) }}
         run: |
           echo "DATE=$(date -d '2 days ago' +'%Y-%m-%d')" >> $GITHUB_ENV
         shell: bash
 
-      - name: Set DATE from input or fallback
+      - name: Set DATE from workflow_dispatch input
         if: ${{ github.event.inputs.date != '' && github.event.inputs.date != null }}
         run: echo "DATE=${{ github.event.inputs.date }}" >> $GITHUB_ENV
+        
+      - name: Set DATE from workflow_call input
+        if: ${{ inputs.date != '' && inputs.date != null }}
+        run: echo "DATE=${{ inputs.date }}" >> $GITHUB_ENV
 
       - name: Ensure .env file exists
         run: |
           if [ ! -f ./london-resolver/.env ]; then
-            echo "DATE=${{ env.DATE }}" > ./london-resolver/.env
+            echo "DATE=$DATE" > ./london-resolver/.env
           fi
 
       - name: Install Docker Compose
@@ -42,11 +59,14 @@ jobs:
       - name: Run Docker Compose
         run: docker-compose -f ./london-resolver/docker-compose.yml up --build
 
+      - name: Create directories for output
+        run: mkdir -p ./london/highest-temperature-daily
+
       - name: Copy output file from container
-        run: docker cp london-runner:/app/temperature_results_${{ env.DATE }}.json .
+        run: docker cp london-runner:/app/temperature_results_${{ env.DATE }}.json ./london/highest-temperature-daily/result_${{ env.DATE }}.json
 
       - name: Archive resolution output file
         uses: actions/upload-artifact@v4
         with:
-          name: temperature_results_${{ env.DATE }}
-          path: ./temperature_results_${{ env.DATE }}.json
+          name: london_highest_temperature_daily_${{ env.DATE }}
+          path: ./london/highest-temperature-daily/result_${{ env.DATE }}.json

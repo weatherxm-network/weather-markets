@@ -1,0 +1,96 @@
+name: Check and Run Resolver
+
+on:
+  schedule:
+    # Run multiple times per day to check if data is available
+    # These times are in UTC (Europe/Athens is UTC+3 during summer, UTC+2 during winter)
+    # 15:00, 16:00, 17:00, 18:00 UTC = 18:00, 19:00, 20:00, 21:00 Europe/Athens time
+    - cron: '0 15,16,17,18 * * *'
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to check (YYYY-MM-DD)'
+        required: false
+        default: ''
+
+jobs:
+  check-artifact-exists:
+    name: Check London Highest Temperature Artifact
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_exists: ${{ steps.check-artifact.outputs.artifact_exists }}
+      date: ${{ steps.set-date.outputs.date }}
+    steps:
+      - name: Calculate default DATE (yesterday)
+        if: ${{ github.event.inputs.date == '' || github.event.inputs.date == null }}
+        id: calculate-date
+        run: |
+          echo "DATE=$(date -d 'yesterday' +'%Y-%m-%d')" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set DATE from input or fallback
+        if: ${{ github.event.inputs.date != '' && github.event.inputs.date != null }}
+        run: echo "DATE=${{ github.event.inputs.date }}" >> $GITHUB_ENV
+
+      - name: Set output date
+        id: set-date
+        run: echo "date=$DATE" >> $GITHUB_OUTPUT
+
+      - name: Check if artifact exists
+        id: check-artifact
+        uses: actions/github-script@v7
+        env:
+          DATE: ${{ env.DATE }}
+        with:
+          script: |
+            const date = process.env.DATE;
+            const artifactName = `london_highest_temperature_daily_${date}`;
+            
+            console.log(`Checking for artifact: ${artifactName}`);
+            
+            const { repo, owner } = context.repo;
+            
+            try {
+              // List workflow runs
+              const workflowRuns = await github.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: 'run-resolver.yml',
+                status: 'success'
+              });
+              
+              // For each workflow run, check if it has our artifact
+              let artifactExists = false;
+              
+              for (const run of workflowRuns.data.workflow_runs) {
+                const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                  owner,
+                  repo,
+                  run_id: run.id
+                });
+                
+                const found = artifacts.data.artifacts.some(artifact => 
+                  artifact.name === artifactName
+                );
+                
+                if (found) {
+                  console.log(`Found artifact ${artifactName} in workflow run ${run.id}`);
+                  artifactExists = true;
+                  break;
+                }
+              }
+              
+              console.log(`Artifact exists: ${artifactExists}`);
+              core.setOutput('artifact_exists', artifactExists.toString());
+            } catch (error) {
+              console.error(`Error checking for artifact: ${error}`);
+              core.setOutput('artifact_exists', 'false');
+            }
+
+  trigger-resolver:
+    name: Trigger London Highest Temperature for ${{ needs.check-artifact-exists.outputs.date }}
+    needs: check-artifact-exists
+    if: ${{ needs.check-artifact-exists.outputs.artifact_exists == 'false' }}
+    uses: ./.github/workflows/run-resolver.yml
+    with:
+      date: ${{ needs.check-artifact-exists.outputs.date }}
