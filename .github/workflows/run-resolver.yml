@@ -19,10 +19,17 @@ on:
 
 jobs:
   run-docker-compose:
+    name: London Highest Temperature for ${{ inputs.date || github.event.inputs.date || format('2 days ago ({0})', format(fromJSON('"${{ steps.date.outputs.date }}"'), 'YYYY-MM-DD')) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        
+      - name: Get date for display
+        id: date
+        if: ${{ inputs.date == '' && github.event.inputs.date == '' }}
+        run: echo "date=$(date -d '2 days ago' +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Calculate default DATE (2 days ago)
         if: ${{ (github.event.inputs.date == '' || github.event.inputs.date == null) && (inputs.date == '' || inputs.date == null) }}
