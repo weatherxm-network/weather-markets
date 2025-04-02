@@ -51,22 +51,44 @@ jobs:
             const { repo, owner } = context.repo;
             
             try {
-              // List workflow runs
-              const workflowRuns = await github.rest.actions.listWorkflowRuns({
+              // Check all workflow runs, not just from run-resolver.yml
+              let allWorkflowRuns = [];
+              
+              // Get runs from run-resolver.yml
+              const resolverRuns = await github.rest.actions.listWorkflowRuns({
                 owner,
                 repo,
                 workflow_id: 'run-resolver.yml',
                 status: 'success'
               });
+              allWorkflowRuns = allWorkflowRuns.concat(resolverRuns.data.workflow_runs);
+              
+              // Get runs from check-and-run-resolver.yml (this workflow)
+              const checkerRuns = await github.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: 'check-and-run-resolver.yml',
+                status: 'success'
+              });
+              allWorkflowRuns = allWorkflowRuns.concat(checkerRuns.data.workflow_runs);
+              
+              console.log(`Checking ${allWorkflowRuns.length} workflow runs for artifact`);
               
               // For each workflow run, check if it has our artifact
               let artifactExists = false;
               
-              for (const run of workflowRuns.data.workflow_runs) {
+              for (const run of allWorkflowRuns) {
                 const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
                   owner,
                   repo,
                   run_id: run.id
+                });
+                
+                console.log(`Checking run ${run.id} (${run.name}), found ${artifacts.data.artifacts.length} artifacts`);
+                
+                // Log all artifact names for debugging
+                artifacts.data.artifacts.forEach(artifact => {
+                  console.log(`  - Artifact: ${artifact.name}`);
                 });
                 
                 const found = artifacts.data.artifacts.some(artifact => 
@@ -87,10 +109,27 @@ jobs:
               core.setOutput('artifact_exists', 'false');
             }
 
-  trigger-resolver:
-    name: Trigger London Highest Temperature for ${{ needs.check-artifact-exists.outputs.date }}
+  # Commented out for testing artifact detection logic
+  # trigger-resolver:
+  #   name: Trigger London Highest Temperature for ${{ needs.check-artifact-exists.outputs.date }}
+  #   needs: check-artifact-exists
+  #   if: ${{ needs.check-artifact-exists.outputs.artifact_exists == 'false' }}
+  #   uses: ./.github/workflows/run-resolver.yml
+  #   with:
+  #     date: ${{ needs.check-artifact-exists.outputs.date }}
+  
+  # Add a debug job to output the artifact detection results
+  debug-output:
+    name: Debug Artifact Detection Results
     needs: check-artifact-exists
-    if: ${{ needs.check-artifact-exists.outputs.artifact_exists == 'false' }}
-    uses: ./.github/workflows/run-resolver.yml
-    with:
-      date: ${{ needs.check-artifact-exists.outputs.date }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output detection results
+        run: |
+          echo "Date checked: ${{ needs.check-artifact-exists.outputs.date }}"
+          echo "Artifact exists: ${{ needs.check-artifact-exists.outputs.artifact_exists }}"
+          if [ "${{ needs.check-artifact-exists.outputs.artifact_exists }}" == "true" ]; then
+            echo "✅ Artifact was found - resolver would NOT be triggered"
+          else
+            echo "❌ Artifact was NOT found - resolver would be triggered"
+          fi
