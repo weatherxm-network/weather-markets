@@ -102,6 +102,14 @@ jobs:
                 }
               }
               
+              // Enhanced logging with visual indicators and action description
+              if (artifactExists) {
+                console.log(`✅ Artifact ${artifactName} EXISTS - resolver will NOT be triggered`);
+              } else {
+                console.log(`❌ Artifact ${artifactName} DOES NOT EXIST - resolver will be triggered`);
+              }
+              
+              console.log(`Date checked: ${date}`);
               console.log(`Artifact exists: ${artifactExists}`);
               core.setOutput('artifact_exists', artifactExists.toString());
             } catch (error) {
@@ -109,27 +117,11 @@ jobs:
               core.setOutput('artifact_exists', 'false');
             }
 
-  # Commented out for testing artifact detection logic
-  # trigger-resolver:
-  #   name: Trigger London Highest Temperature for ${{ needs.check-artifact-exists.outputs.date }}
-  #   needs: check-artifact-exists
-  #   if: ${{ needs.check-artifact-exists.outputs.artifact_exists == 'false' }}
-  #   uses: ./.github/workflows/run-resolver.yml
-  #   with:
-  #     date: ${{ needs.check-artifact-exists.outputs.date }}
-  
-  # Add a debug job to output the artifact detection results
-  debug-output:
-    name: Debug Artifact Detection Results
+  # Trigger the resolver if the artifact doesn't exist
+  trigger-resolver:
+    name: Trigger London Highest Temperature for ${{ needs.check-artifact-exists.outputs.date }}
     needs: check-artifact-exists
-    runs-on: ubuntu-latest
-    steps:
-      - name: Output detection results
-        run: |
-          echo "Date checked: ${{ needs.check-artifact-exists.outputs.date }}"
-          echo "Artifact exists: ${{ needs.check-artifact-exists.outputs.artifact_exists }}"
-          if [ "${{ needs.check-artifact-exists.outputs.artifact_exists }}" == "true" ]; then
-            echo "✅ Artifact was found - resolver would NOT be triggered"
-          else
-            echo "❌ Artifact was NOT found - resolver would be triggered"
-          fi
+    if: ${{ needs.check-artifact-exists.outputs.artifact_exists == 'false' }}
+    uses: ./.github/workflows/run-resolver.yml
+    with:
+      date: ${{ needs.check-artifact-exists.outputs.date }}
