@@ -1,9 +1,6 @@
-name: Run Docker Compose and Create Release
+name: Run Resolver
 
 on:
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       date:
