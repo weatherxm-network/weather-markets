@@ -54,9 +54,10 @@ def fetch_events(namespace, limit, basin_base_url, after, before):
         url = f"{basin_base_url}/{namespace}/events"
         params = {
             "limit": limit,
-            "after": after,
-            "before": before
+            "after": after-2,
+            "before": before+2
         }
+        print(params)
         response = requests.get(url, params=params)
         print(f"Response Status: {response.status_code}")
         events = response.json()
@@ -133,19 +134,21 @@ def upload_json_and_pin(devices, date):
         files = {
             'file': ('data.json', json_str, 'application/json')
         }
-        CUSTOM_GROUP_ID = f"{BETTING_PLATFORM.lower()}-{BET_NAME.lower().replace(' ', '-')}"
+        devLen = len(devices["devices"])
         data = {
             "network": "public",
             "name": f"{BET_NAME}_{date}.json",
+            "group": GROUP_ID,
             "keyvalues": json.dumps({
-                    "medianCelciusTemp": devices["median_temperature_celsius"],
-                    "medianFarenheitTemp": devices["median_temperature_fahrenheit"],
+                    "devicesNum": str(devLen),
+                    "medianCelciusTemp": str(devices["median_temperature_celsius"]),
+                    "medianFarenheitTemp": str(devices["median_temperature_fahrenheit"]),
                     "betName": BET_NAME,
                     "platform": BETTING_PLATFORM,
-                    "date": date,
-                    "customGroup": CUSTOM_GROUP_ID
+                    "date": date
             })
         }
+        print(data)
         upload_url = "https://uploads.pinata.cloud/v3/files"
         headers = {
             "Authorization": f"Bearer {PINATA_JWT}"
