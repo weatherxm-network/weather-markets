@@ -23,7 +23,18 @@ on:
         required: false
         default: 'dev'
         type: string
-    secrets: inherit
+    secrets:
+      GEOJSON_URL: { required: true }
+      BASIN_NAMESPACE: { required: true }
+      BASIN_API_BASE_URL: { required: true }
+      IPFS_GATEWAY_URL: { required: true }
+      PINATA_JWT: { required: true }
+      BETTING_PLATFORM: { required: true }
+      BET_NAME: { required: true }
+      CONTRACT_ADDRESS: { required: true }
+      RPC_URL: { required: true }
+      PRIVATE_KEY: { required: true }
+      GROUP_ID: { required: true }
 
 jobs:
   run-docker-compose:
