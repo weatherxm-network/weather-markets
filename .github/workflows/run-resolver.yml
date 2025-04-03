@@ -42,11 +42,32 @@ jobs:
         if: ${{ inputs.date != '' && inputs.date != null }}
         run: echo "DATE=${{ inputs.date }}" >> $GITHUB_ENV
 
-      - name: Ensure .env file exists
+      - name: Populate .env file from secrets
         run: |
-          if [ ! -f ./london-resolver/.env ]; then
-            echo "DATE=$DATE" > ./london-resolver/.env
-          fi
+          echo "DATE=${{ env.DATE }}" > ./london-resolver/.env
+          echo "GEOJSON_URL=${{ secrets.GEOJSON_URL }}" >> ./london-resolver/.env
+          echo "BASIN_NAMESPACE=${{ secrets.BASIN_NAMESPACE }}" >> ./london-resolver/.env
+          echo "BASIN_API_BASE_URL=${{ secrets.BASIN_API_BASE_URL }}" >> ./london-resolver/.env
+          echo "IPFS_GATEWAY_URL=${{ secrets.IPFS_GATEWAY_URL }}" >> ./london-resolver/.env
+          echo "PINATA_JWT=${{ secrets.PINATA_JWT }}" >> ./london-resolver/.env
+          echo "BETTING_PLATFORM=${{ secrets.BETTING_PLATFORM }}" >> ./london-resolver/.env
+          echo "BET_NAME=${{ secrets.BET_NAME }}" >> ./london-resolver/.env
+          echo "CONTRACT_ADDRESS=${{ secrets.CONTRACT_ADDRESS }}" >> ./london-resolver/.env
+          echo "RPC_URL=${{ secrets.RPC_URL }}" >> ./london-resolver/.env
+          echo "PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}" >> ./london-resolver/.env
+          echo "GROUP_ID=${{ secrets.GROUP_ID }}" >> ./london-resolver/.env
+        env:
+          GEOJSON_URL: ${{ secrets.GEOJSON_URL }}
+          BASIN_NAMESPACE: ${{ secrets.BASIN_NAMESPACE }}
+          BASIN_API_BASE_URL: ${{ secrets.BASIN_API_BASE_URL }}
+          IPFS_GATEWAY_URL: ${{ secrets.IPFS_GATEWAY_URL }}
+          PINATA_JWT: ${{ secrets.PINATA_JWT }}
+          BETTING_PLATFORM: ${{ secrets.BETTING_PLATFORM }}
+          BET_NAME: ${{ secrets.BET_NAME }}
+          CONTRACT_ADDRESS: ${{ secrets.CONTRACT_ADDRESS }}
+          RPC_URL: ${{ secrets.RPC_URL }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          GROUP_ID: ${{ secrets.GROUP_ID }}
 
       - name: Install Docker Compose
         run: |
