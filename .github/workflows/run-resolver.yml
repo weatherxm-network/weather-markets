@@ -7,17 +7,29 @@ on:
         description: 'Date for the release'
         required: false  # Make this optional
         default: ''
+      environment_name:
+        description: 'Target environment (e.g., dev, prod)'
+        required: false
+        default: 'dev'
+        type: string
   workflow_call:
     inputs:
       date:
         description: 'Date for the release'
         required: false
         type: string
+      environment_name:
+        description: 'Target environment (e.g., dev, prod)'
+        required: false
+        default: 'dev'
+        type: string
+    secrets: inherit
 
 jobs:
   run-docker-compose:
-    name: London Highest Temperature for ${{ inputs.date || github.event.inputs.date || format('2 days ago ({0})', format(fromJSON('"${{ steps.date.outputs.date }}"'), 'YYYY-MM-DD')) }}
+    name: London Highest Temperature for ${{ inputs.date || github.event.inputs.date || format('2 days ago ({0})', format(fromJSON('"${{ steps.date.outputs.date }}"'), 'YYYY-MM-DD')) }} [${{ github.event.inputs.environment_name || inputs.environment_name || 'dev' }}]
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment_name || inputs.environment_name || 'dev' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
