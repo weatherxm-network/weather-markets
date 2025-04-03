@@ -47,13 +47,13 @@ This file aggregates data for March 1st, 2025 from London stations, filters by Q
 
 ### Resolution Process
 
-1. Fetch the daily data bundle for March 1, 2025, from [https://index.weatherxm.com/](https://index.weatherxm.com/).  
+1. Fetch the daily data bundle for March 3, 2025, from [https://index.weatherxm.com/](https://index.weatherxm.com/).  
 2. Filter stations within [London’s greater city boundary](/london-resolver/geojson/london.geojson).
 3. Apply QoD and PoL thresholds to select high-quality data.
 4. Calculate the median and mean highest temperatures from qualifying stations.
 5. Compare the result (e.g. median temperature) to the weather market threshold (15°C) to determine the outcome.
 
-**Output**: The output file that contains the median highest temperatures for London on March 1, 2025, 
+**Output**: The output file that contains the median highest temperatures for London on March 3, 2025, 
 along with the list of stations used in the calculation can be found on IPFS here:
 [https://ipfs.io/ipfs/bafkreicpifunrt33aas2bhrqqgzf5ou4ptylalbg3kwahi7nymzvk5iqvy](https://ipfs.io/ipfs/bafkreicpifunrt33aas2bhrqqgzf5ou4ptylalbg3kwahi7nymzvk5iqvy)
 
