@@ -39,7 +39,9 @@ To resolve weather-related weather markets, we process WeatherXM data as follows
 
 This file aggregates data for March 1st, 2025 from London stations, filters by QoD and PoL, and provides the median highest temperatures.
 
-# Example Use Case: Highest temperature weather market in London
+# Example Use Case
+
+Let's see this example use case for the **highest temperature weather market in London**.
 
 ### Weather Market
 
