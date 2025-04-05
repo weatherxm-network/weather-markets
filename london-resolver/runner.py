@@ -226,8 +226,8 @@ if __name__ == "__main__":
             # REMOVE FILE AFTER PROCESSING IT AND DOWNLOAD THE NEXT ONE
             os.remove(path)
             if type(decision) != str:  
-                celsius_temp = round(float(decision), 2)
-                fahrenheit_temp = celsius_to_fahrenheit(celsius_temp)
+                celsius_temp = int(decision)
+                fahrenheit_temp = int(celsius_to_fahrenheit(celsius_temp))
                 devices_list = json.loads(filtered_devices)
                 results = {
                     "date": date,
@@ -240,7 +240,7 @@ if __name__ == "__main__":
                     json.dump(results, f, indent=4)
                 print(f"SAVED RESULTS LOCALY AS {output_filename}")
                 upload_json_and_pin(results, date)    
-                print(f"MEDIAN HIGHEST TEMP FOR {date}: {round(float(decision),2)} °C is equal to {fahrenheit_temp}°F")
+                print(f"MEDIAN HIGHEST TEMP FOR {date}: {celsius_temp} °C is equal to {fahrenheit_temp}°F")
             else:
                 print('NO DEVICES MEET THE CRITERIA TO CALCULATE MEDIAN HIGHEST TEMPERATURE')
         else:
