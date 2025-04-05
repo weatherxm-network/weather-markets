@@ -61,7 +61,7 @@ def filter(chunk):
     print('GEO VERIFIED DEVICES COUNT: {}'.format(len(geo_filtered['name'].unique())))
     print('GEO LOCATION VERIFICATION IS COMPLETED')
     weather_verified = weather.has_verified_metrics(geo_filtered)
-    print('WEATHER VERIFIED DEVICES COUNT WITH QOD>=0.8 AND POL>0: {}'.format(len(weather_verified['name'].unique())))
+    print('WEATHER VERIFIED DEVICES COUNT WITH QOD>=0.999 AND POL>0: {}'.format(len(weather_verified['name'].unique())))
     print('WEATHER DATA FILTERING IS COMPLETED')     
     data_verified = data.verify(weather_verified)
     print('DATA VERIFICATION IS COMPLETED')
