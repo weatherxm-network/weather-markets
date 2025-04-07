@@ -81,7 +81,7 @@ def decide(path, low_mem):
     if df.size>0:
         device_max = df.groupby('name', as_index=False, observed=False)['temperature'].max()
         median_temp = device_max['temperature'].median()
-        return round(median_temp, 2),filtered_devices
+        return median_temp,filtered_devices
     print('NO DEVICES MEET THE CRITERIA TO CALCULATE MEDIAN HIGHEST TEMPERATURE')
     return 
 

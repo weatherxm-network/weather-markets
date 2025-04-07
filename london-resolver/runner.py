@@ -31,9 +31,7 @@ def store_cid_on_chain(date, platform, bet_name, cid):
     nonce = w3.eth.get_transaction_count(account.address)
     txn = contract.functions.storeCID(date, platform, bet_name, cid).build_transaction({
         'from': account.address,
-        'nonce': nonce,
-        'gas': 300000,
-        'gasPrice': w3.eth.gas_price
+        'nonce': nonce
     })
     signed_txn = w3.eth.account.sign_transaction(txn, PRIVATE_KEY)
     tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
@@ -48,6 +46,7 @@ def store_cid_on_chain(date, platform, bet_name, cid):
         print(f"⛽ Gas Used: {receipt.gasUsed}")
     else:
         print(f"❌ Transaction failed! TX Hash: {tx_hash.hex()}")
+        
 
 def fetch_events(namespace, limit, basin_base_url, after, before):
     try:
@@ -226,7 +225,7 @@ if __name__ == "__main__":
             # REMOVE FILE AFTER PROCESSING IT AND DOWNLOAD THE NEXT ONE
             os.remove(path)
             if type(decision) != str:  
-                celsius_temp = int(decision)
+                celsius_temp = decision
                 fahrenheit_temp = int(celsius_to_fahrenheit(celsius_temp))
                 devices_list = json.loads(filtered_devices)
                 results = {
@@ -240,7 +239,7 @@ if __name__ == "__main__":
                     json.dump(results, f, indent=4)
                 print(f"SAVED RESULTS LOCALY AS {output_filename}")
                 upload_json_and_pin(results, date)    
-                print(f"MEDIAN HIGHEST TEMP FOR {date}: {celsius_temp} °C is equal to {fahrenheit_temp}°F")
+                print(f"MEDIAN HIGHEST TEMP FOR {date}: {celsius_temp} °C => {fahrenheit_temp}°F whole degrees cast (int)")
             else:
                 print('NO DEVICES MEET THE CRITERIA TO CALCULATE MEDIAN HIGHEST TEMPERATURE')
         else:
