@@ -15,7 +15,7 @@ on:
       environment_name:
         description: 'Target environment for the resolver (e.g., dev, prod)'
         required: false
-        default: 'dev'
+        default: 'prod'
         type: string
 
 jobs:
@@ -49,7 +49,7 @@ jobs:
         with:
           script: |
             const date = process.env.DATE;
-            const env = context.payload.inputs?.environment_name || 'dev';
+            const env = context.payload.inputs?.environment_name || 'prod';
             const artifactName = `london_highest_temperature_daily_${date}_${env}`;
             
             console.log(`Checking for artifact: ${artifactName}`);
@@ -125,11 +125,11 @@ jobs:
 
   # Trigger the resolver if the artifact doesn't exist
   trigger-resolver:
-    name: Trigger London Highest Temperature for ${{ needs.check-artifact-exists.outputs.date }} [${{ github.event.inputs.environment_name || 'dev' }}]
+    name: Trigger London Highest Temperature for ${{ needs.check-artifact-exists.outputs.date }} [${{ github.event.inputs.environment_name || 'prod' }}]
     needs: check-artifact-exists
     if: ${{ needs.check-artifact-exists.outputs.artifact_exists == 'false' }}
     uses: ./.github/workflows/run-resolver.yml
     secrets: inherit
     with:
       date: ${{ needs.check-artifact-exists.outputs.date }}
-      environment_name: ${{ github.event.inputs.environment_name || 'dev' }}
+      environment_name: ${{ github.event.inputs.environment_name || 'prod' }}

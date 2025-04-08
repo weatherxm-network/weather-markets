@@ -10,7 +10,7 @@ on:
       environment_name:
         description: 'Target environment (e.g., dev, prod)'
         required: false
-        default: 'dev'
+        default: 'prod'
         type: string
   workflow_call:
     inputs:
@@ -21,7 +21,7 @@ on:
       environment_name:
         description: 'Target environment (e.g., dev, prod)'
         required: false
-        default: 'dev'
+        default: 'prod'
         type: string
     secrets:
       GEOJSON_URL: { required: true }
@@ -38,9 +38,9 @@ on:
 
 jobs:
   run-docker-compose:
-    name: London Highest Temperature for ${{ inputs.date || github.event.inputs.date || format('2 days ago ({0})', format(fromJSON('"${{ steps.date.outputs.date }}"'), 'YYYY-MM-DD')) }} [${{ github.event.inputs.environment_name || inputs.environment_name || 'dev' }}]
+    name: London Highest Temperature for ${{ inputs.date || github.event.inputs.date || format('2 days ago ({0})', format(fromJSON('"${{ steps.date.outputs.date }}"'), 'YYYY-MM-DD')) }} [${{ github.event.inputs.environment_name || inputs.environment_name || 'prod' }}]
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment_name || inputs.environment_name || 'dev' }}
+    environment: ${{ github.event.inputs.environment_name || inputs.environment_name || 'prod' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -109,5 +109,5 @@ jobs:
       - name: Archive resolution output file
         uses: actions/upload-artifact@v4
         with:
-          name: london_highest_temperature_daily_${{ env.DATE }}_${{ github.event.inputs.environment_name || inputs.environment_name || 'dev' }}
+          name: london_highest_temperature_daily_${{ env.DATE }}_${{ github.event.inputs.environment_name || inputs.environment_name || 'prod' }}
           path: ./london/highest-temperature-daily/result_${{ env.DATE }}.json
