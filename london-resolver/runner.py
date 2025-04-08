@@ -231,7 +231,7 @@ if __name__ == "__main__":
                 results = {
                     "date": date,
                     "devices": devices_list,
-                    "median_temperature_celsius": celsius_temp,
+                    "median_temperature_celsius": str(celsius_temp),
                     "median_temperature_fahrenheit": fahrenheit_temp
                 }
                 output_filename = f"temperature_results_{date}.json"
