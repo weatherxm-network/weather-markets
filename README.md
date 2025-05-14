@@ -31,7 +31,7 @@ ensuring data reliability and location accuracy.
 To resolve weather-related weather markets, we process WeatherXM data as follows:
 
 1. **Geographic Filtering**: Identify all WeatherXM stations within the defined boundary of the target city (e.g. London). City boundaries are based on standard geographic definitions (e.g. [H3](https://github.com/uber/h3) hexagonal cells).  
-2. **Data Quality Filtering**: Include only stations with sufficiently high QoD (>0.8) and PoL scores to ensure accuracy and trustworthiness.
+2. **Data Quality Filtering**: Include only stations with sufficiently high QoD (>0.999) and PoL scores to ensure accuracy and trustworthiness.
 3. **Metric Calculation**: For each qualifying station, extract the relevant weather metric (e.g. highest daily temperature). Then compute:  
    * **Median**: The middle value of all highest temperatures.
    * **Mean**: The average of all highest temperatures.
