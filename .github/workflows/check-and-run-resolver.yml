@@ -2,10 +2,8 @@ name: Check and Run Resolver
 
 on:
   schedule:
-    # Run multiple times per day to check if data is available
-    # These times are in UTC (Europe/Athens is UTC+3 during summer, UTC+2 during winter)
-    # 12:00-20:00 UTC = 15:00-23:00 Europe/Athens time
-    - cron: '0 12-20 * * *'
+    # Run every hour of the day to check if data is available for `2 days ago`
+    - cron: '0 * * * *'
   workflow_dispatch:
     inputs:
       date:
@@ -26,11 +24,11 @@ jobs:
       artifact_exists: ${{ steps.check-artifact.outputs.artifact_exists }}
       date: ${{ steps.set-date.outputs.date }}
     steps:
-      - name: Calculate default DATE (yesterday)
+      - name: Calculate default DATE (2 days ago)
         if: ${{ github.event.inputs.date == '' || github.event.inputs.date == null }}
         id: calculate-date
         run: |
-          echo "DATE=$(date -d 'yesterday' +'%Y-%m-%d')" >> $GITHUB_ENV
+          echo "DATE=$(date -d '2 days ago' +'%Y-%m-%d')" >> $GITHUB_ENV
         shell: bash
 
       - name: Set DATE from input or fallback
